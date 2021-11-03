@@ -4,7 +4,6 @@ DOCKER_IMAGE := "mastak/car-plate-recognizer"
 install:
 	@pip install -r ./requirements.txt -r ./requirements.dev.txt
 
-
 .PHONY: build
 build:
 	@echo "Build $(DOCKER_IMAGE)"
@@ -20,7 +19,13 @@ test:
 	@echo "TODO: black,flake8,mypy,tests"
 	python -m flake8 ./car_plate_recognizer
 	python -m black --check ./car_plate_recognizer
+	python -m isort --check ./car_plate_recognizer
 
 .PHONY: black
 black:
 	python -m black ./car_plate_recognizer
+	python -m isort --check ./car_plate_recognizer
+
+.PHONY: isort
+isort:
+	python -m isort --check ./car_plate_recognizer

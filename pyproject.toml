@@ -118,7 +118,6 @@ expected-line-ending-format = "LF"
 overgeneral-exceptions = [
     "BaseException",
     "Exception",
-    "HomeAssistantError",
 ]
 
 [tool.pylint.TYPING]
