@@ -1,9 +1,10 @@
 import cv2
+import imutils
 import numpy as np
-from skimage.filters import threshold_local
 import tensorflow as tf
 from skimage import measure
-import imutils
+from skimage.filters import threshold_local
+
 
 def sort_cont(character_contours):
     """
@@ -11,8 +12,11 @@ def sort_cont(character_contours):
     """
     i = 0
     boundingBoxes = [cv2.boundingRect(c) for c in character_contours]
-    (character_contours, boundingBoxes) = zip(*sorted(zip(character_contours, boundingBoxes),
-                                                      key=lambda b: b[1][i], reverse=False))
+    (character_contours, boundingBoxes) = zip(
+        *sorted(
+            zip(character_contours, boundingBoxes), key=lambda b: b[1][i], reverse=False
+        )
+    )
     return character_contours
 
 
@@ -23,9 +27,9 @@ def segment_chars(plate_img, fixed_width):
     """
     V = cv2.split(cv2.cvtColor(plate_img, cv2.COLOR_BGR2HSV))[2]
 
-    T = threshold_local(V, 29, offset=15, method='gaussian')
+    T = threshold_local(V, 29, offset=15, method="gaussian")
 
-    thresh = (V > T).astype('uint8') * 255
+    thresh = (V > T).astype("uint8") * 255
 
     thresh = cv2.bitwise_not(thresh)
 
@@ -38,7 +42,7 @@ def segment_chars(plate_img, fixed_width):
     # of the character candidates
     labels = measure.label(thresh, neighbors=8, background=0)
 
-    charCandidates = np.zeros(thresh.shape, dtype='uint8')
+    charCandidates = np.zeros(thresh.shape, dtype="uint8")
 
     # loop over the unique components
     characters = []
@@ -48,7 +52,7 @@ def segment_chars(plate_img, fixed_width):
             continue
         # otherwise, construct the label mask to display only connected components for the
         # current label, then find contours in the label mask
-        labelMask = np.zeros(thresh.shape, dtype='uint8')
+        labelMask = np.zeros(thresh.shape, dtype="uint8")
         labelMask[labels == label] = 255
 
         cnts = cv2.findContours(labelMask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -81,7 +85,9 @@ def segment_chars(plate_img, fixed_width):
 
                 cv2.drawContours(charCandidates, [hull], -1, 255, -1)
 
-    _, contours, hier = cv2.findContours(charCandidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, hier = cv2.findContours(
+        charCandidates, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
     if contours:
         contours = sort_cont(contours)
         addPixel = 4  # value to be added to each dimension of the character
@@ -95,7 +101,7 @@ def segment_chars(plate_img, fixed_width):
                 x = x - addPixel
             else:
                 x = 0
-            temp = bgr_thresh[y:y + h + (addPixel * 2), x:x + w + (addPixel * 2)]
+            temp = bgr_thresh[y : y + h + (addPixel * 2), x : x + w + (addPixel * 2)]
 
             characters.append(temp)
         return characters
@@ -103,68 +109,85 @@ def segment_chars(plate_img, fixed_width):
         return None
 
 
-
 class PlateFinder:
     def __init__(self):
         self.min_area = 4500  # minimum area of the plate
         self.max_area = 30000  # maximum area of the plate
 
-        self.element_structure = cv2.getStructuringElement(shape=cv2.MORPH_RECT, ksize=(22, 3))
+        self.element_structure = cv2.getStructuringElement(
+            shape=cv2.MORPH_RECT, ksize=(22, 3)
+        )
 
     def preprocess(self, input_img):
         imgBlurred = cv2.GaussianBlur(input_img, (7, 7), 0)  # old window was (5,5)
         gray = cv2.cvtColor(imgBlurred, cv2.COLOR_BGR2GRAY)  # convert to gray
-        sobelx = cv2.Sobel(gray, cv2.CV_8U, 1, 0, ksize=3)  # sobelX to get the vertical edges
-        ret2, threshold_img = cv2.threshold(sobelx, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        # sobelX to get the vertical edges
+        sobelx = cv2.Sobel(gray, cv2.CV_8U, 1, 0, ksize=3)
+        ret2, threshold_img = cv2.threshold(
+            sobelx, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
+        )
 
         element = self.element_structure
         morph_n_thresholded_img = threshold_img.copy()
-        cv2.morphologyEx(src=threshold_img, op=cv2.MORPH_CLOSE, kernel=element, dst=morph_n_thresholded_img)
+        cv2.morphologyEx(
+            src=threshold_img,
+            op=cv2.MORPH_CLOSE,
+            kernel=element,
+            dst=morph_n_thresholded_img,
+        )
         return morph_n_thresholded_img
 
     def extract_contours(self, after_preprocess):
-        _, contours, _ = cv2.findContours(after_preprocess, mode=cv2.RETR_EXTERNAL,
-                                                    method=cv2.CHAIN_APPROX_NONE)
+        _, contours, _ = cv2.findContours(
+            after_preprocess, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE
+        )
         return contours
 
     def clean_plate(self, plate):
         gray = cv2.cvtColor(plate, cv2.COLOR_BGR2GRAY)
-        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
-        _, contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        thresh = cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+        )
+        _, contours, _ = cv2.findContours(
+            thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+        )
 
         if contours:
             areas = [cv2.contourArea(c) for c in contours]
-            max_index = np.argmax(areas)  # index of the largest contour in the area array
+            # index of the largest contour in the area array
+            max_index = np.argmax(areas)
 
             max_cnt = contours[max_index]
             max_cntArea = areas[max_index]
             x, y, w, h = cv2.boundingRect(max_cnt)
-            rect = cv2.minAreaRect(max_cnt)
+            # rect = cv2.minAreaRect(max_cnt)
             rotatedPlate = plate
-            if not self.ratioCheck(max_cntArea, rotatedPlate.shape[1], rotatedPlate.shape[0]):
+            if not self.ratioCheck(
+                max_cntArea, rotatedPlate.shape[1], rotatedPlate.shape[0]
+            ):
                 return plate, False, None
             return rotatedPlate, True, [x, y, w, h]
         else:
             return plate, False, None
 
-
-
     def check_plate(self, input_img, contour):
         min_rect = cv2.minAreaRect(contour)
         if self.validateRatio(min_rect):
             x, y, w, h = cv2.boundingRect(contour)
-            after_validation_img = input_img[y:y + h, x:x + w]
-            after_clean_plate_img, plateFound, coordinates = self.clean_plate(after_validation_img)
+            after_validation_img = input_img[y : y + h, x : x + w]
+            after_clean_plate_img, plateFound, coordinates = self.clean_plate(
+                after_validation_img
+            )
             if plateFound:
-                characters_on_plate = self.find_characters_on_plate(after_clean_plate_img)
-                if (characters_on_plate is not None and len(characters_on_plate) == 8):
+                characters_on_plate = self.find_characters_on_plate(
+                    after_clean_plate_img
+                )
+                if characters_on_plate is not None and len(characters_on_plate) == 8:
                     x1, y1, w1, h1 = coordinates
                     coordinates = x1 + x, y1 + y
                     after_check_plate_img = after_clean_plate_img
                     return after_check_plate_img, characters_on_plate, coordinates
         return None, None, None
-
-
 
     def find_possible_plates(self, input_img):
         """
@@ -184,7 +207,7 @@ class PlateFinder:
                 self.char_on_plate.append(characters_on_plate)
                 self.corresponding_area.append(coordinates)
 
-        if (len(plates) > 0):
+        if len(plates) > 0:
             return plates
         else:
             return None
@@ -229,14 +252,14 @@ class PlateFinder:
     def validateRatio(self, rect):
         (x, y), (width, height), rect_angle = rect
 
-        if (width > height):
+        if width > height:
             angle = -rect_angle
         else:
             angle = 90 + rect_angle
 
         if angle > 15:
             return False
-        if (height == 0 or width == 0):
+        if height == 0 or width == 0:
             return False
 
         area = width * height
@@ -244,9 +267,6 @@ class PlateFinder:
             return False
         else:
             return True
-
-
-
 
 
 class NeuralNetwork:
@@ -269,17 +289,21 @@ class NeuralNetwork:
     def load_label(self, labelFile):
         label = []
         proto_as_ascii_lines = tf.gfile.GFile(labelFile).readlines()
-        for l in proto_as_ascii_lines:
-            label.append(l.rstrip())
+        for line in proto_as_ascii_lines:
+            label.append(line.rstrip())
         return label
 
     def convert_tensor(self, image, imageSizeOuput):
         """
-    takes an image and tranform it in tensor
-    """
-        image = cv2.resize(image, dsize=(imageSizeOuput, imageSizeOuput), interpolation=cv2.INTER_CUBIC)
+        takes an image and tranform it in tensor
+        """
+        image = cv2.resize(
+            image, dsize=(imageSizeOuput, imageSizeOuput), interpolation=cv2.INTER_CUBIC
+        )
         np_image_data = np.asarray(image)
-        np_image_data = cv2.normalize(np_image_data.astype('float'), None, -0.5, .5, cv2.NORM_MINMAX)
+        np_image_data = cv2.normalize(
+            np_image_data.astype("float"), None, -0.5, 0.5, cv2.NORM_MINMAX
+        )
         np_final = np.expand_dims(np_image_data, axis=0)
         return np_final
 
@@ -291,8 +315,9 @@ class NeuralNetwork:
         input_operation = self.graph.get_operation_by_name(input_name)
         output_operation = self.graph.get_operation_by_name(output_name)
 
-        results = self.sess.run(output_operation.outputs[0],
-                                {input_operation.outputs[0]: tensor})
+        results = self.sess.run(
+            output_operation.outputs[0], {input_operation.outputs[0]: tensor}
+        )
         results = np.squeeze(results)
         labels = self.label
         top = results.argsort()[-1:][::-1]
@@ -301,7 +326,7 @@ class NeuralNetwork:
     def label_image_list(self, listImages, imageSizeOuput):
         plate = ""
         for img in listImages:
-            if cv2.waitKey(25) & 0xFF == ord('q'):
+            if cv2.waitKey(25) & 0xFF == ord("q"):
                 break
             plate = plate + self.label_image(self.convert_tensor(img, imageSizeOuput))
         return plate, len(plate)
@@ -313,24 +338,25 @@ if __name__ == "__main__":
     # Initialize the Neural Network
     model = NeuralNetwork()
 
-    cap = cv2.VideoCapture('test_videos/test.MOV')
-    while (cap.isOpened()):
+    cap = cv2.VideoCapture("test_videos/test.MOV")
+    while cap.isOpened():
         ret, img = cap.read()
-        if ret == True:
-            cv2.imshow('original video', img)
-            if cv2.waitKey(25) & 0xFF == ord('q'):
+        if ret:
+            cv2.imshow("original video", img)
+            if cv2.waitKey(25) & 0xFF == ord("q"):
                 break
             # cv2.waitKey(0)
             possible_plates = findPlate.find_possible_plates(img)
             if possible_plates is not None:
                 for i, p in enumerate(possible_plates):
                     chars_on_plate = findPlate.char_on_plate[i]
-                    recognized_plate, _ = model.label_image_list(chars_on_plate, imageSizeOuput=128)
+                    recognized_plate, _ = model.label_image_list(
+                        chars_on_plate, imageSizeOuput=128
+                    )
                     print(recognized_plate)
-                    cv2.imshow('plate', p)
-                    if cv2.waitKey(25) & 0xFF == ord('q'):
+                    cv2.imshow("plate", p)
+                    if cv2.waitKey(25) & 0xFF == ord("q"):
                         break
-
 
         else:
             break

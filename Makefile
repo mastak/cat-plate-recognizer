@@ -2,7 +2,7 @@ DOCKER_IMAGE := "mastak/car-plate-recognizer"
 
 .PHONY: install
 install:
-	@pip install -r ./requirements.txt
+	@pip install -r ./requirements.txt -r ./requirements.dev.txt
 
 
 .PHONY: build
@@ -17,4 +17,10 @@ docker-bash:
 
 .PHONY: test
 test:
-	@echo "TODO: tests"
+	@echo "TODO: black,flake8,mypy,tests"
+	python -m flake8 ./car_plate_recognizer
+	python -m black --check ./car_plate_recognizer
+
+.PHONY: black
+black:
+	python -m black ./car_plate_recognizer
