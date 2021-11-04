@@ -5,8 +5,9 @@ import coloredlogs
 import numpy as np
 from cv2 import cv2
 
-from car_plate_recognizer.handlers.neural_1.handler import Neural1Handler
-from car_plate_recognizer.handlers.circuitdigest import CircuitDigestHandler
+# from car_plate_recognizer.handlers.neural_1.handler import Neural1Handler
+# from car_plate_recognizer.handlers.circuitdigest import CircuitDigestHandler
+from car_plate_recognizer.handlers.nomeroff.handler import NomeroffHandler
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,8 @@ def stream_handler():
     # Initialize the Neural Network
     handlers = (
         # Neural1Handler(),
-        CircuitDigestHandler(),
+        # CircuitDigestHandler(),
+        NomeroffHandler(),
     )
 
     frame_index = 0
@@ -33,6 +35,7 @@ def stream_handler():
             break
 
         image: np.ndarray = image
+        image = cv2.resize(image, (620, 480))
         frame_index += 1
 
         # save_img(image, f"{frame_index}-frame-src.jpg")
