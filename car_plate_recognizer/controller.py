@@ -3,10 +3,10 @@ import time
 
 import coloredlogs
 import numpy as np
-# from PIL import Image
 from cv2 import cv2
 
 from car_plate_recognizer.handlers.neural_1.handler import Neural1Handler
+from car_plate_recognizer.handlers.circuitdigest import CircuitDigestHandler
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,8 @@ def get_time() -> float:
 def stream_handler():
     # Initialize the Neural Network
     handlers = (
-        Neural1Handler(),
+        # Neural1Handler(),
+        CircuitDigestHandler(),
     )
 
     frame_index = 0
@@ -34,7 +35,7 @@ def stream_handler():
         image: np.ndarray = image
         frame_index += 1
 
-        # Image.fromarray(image).save(f"logs/{frame_index}-frame-src.jpg")
+        # save_img(image, f"{frame_index}-frame-src.jpg")
         for handler in handlers:
             started_at = get_time()
             plates = handler.get_plates(image, frame_index)
@@ -45,7 +46,7 @@ def stream_handler():
 
             for index, plate in enumerate(plates):
                 logger.info(f'{handler.__class__.__name__} took {spent_time}, found a car number: {plate.number}')
-                # Image.fromarray(plate.image).save(f"logs/{frame_index}-{index}-plate.jpg")
+                # save_img(plate.image, f"{frame_index}-{index}-plate.jpg")
 
     cap.release()
     cv2.destroyAllWindows()
