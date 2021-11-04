@@ -1,6 +1,7 @@
 [tool.black]
 target-version = ["py37"]
 exclude = 'generated'
+line-length = '120'
 
 [tool.isort]
 # https://github.com/PyCQA/isort/wiki/isort-Settings

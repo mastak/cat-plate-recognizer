@@ -2,7 +2,12 @@ DOCKER_IMAGE := "mastak/car-plate-recognizer"
 
 .PHONY: install
 install:
-	@pip install -r ./requirements.txt -r ./requirements.dev.txt
+	@python3 -m pip install wheel
+	@python3 -m pip install -r ./requirements.txt
+
+.PHONY: install-dev
+install-dev:
+	@python3 -m pip install -r ./requirements.txt -r ./requirements.dev.txt
 
 .PHONY: build
 build:
@@ -17,15 +22,15 @@ docker-bash:
 .PHONY: test
 test:
 	@echo "TODO: black,flake8,mypy,tests"
-	python -m flake8 ./car_plate_recognizer
-	python -m black --check ./car_plate_recognizer
-	python -m isort --check ./car_plate_recognizer
+	python3 -m flake8 ./car_plate_recognizer
+	python3 -m black --check ./car_plate_recognizer
+	python3 -m isort --check ./car_plate_recognizer
 
 .PHONY: black
 black:
-	python -m black ./car_plate_recognizer
-	python -m isort --check ./car_plate_recognizer
+	python3 -m black ./car_plate_recognizer
+	python3 -m isort --check ./car_plate_recognizer
 
 .PHONY: isort
 isort:
-	python -m isort --check ./car_plate_recognizer
+	python3 -m isort --check ./car_plate_recognizer

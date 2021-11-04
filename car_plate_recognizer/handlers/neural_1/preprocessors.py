@@ -1,8 +1,8 @@
 import typing as t
 
-import cv2
 import imutils
 import numpy as np
+from cv2 import cv2
 from skimage import measure
 from skimage.filters import threshold_local
 
@@ -35,9 +35,7 @@ def preprocess_color(img):
     img_gray = cv2.cvtColor(img_blurred, cv2.COLOR_BGR2GRAY)  # convert to gray
     # sobelX to get the vertical edges
     sobelx = cv2.Sobel(img_gray, cv2.CV_8U, 1, 0, ksize=3)
-    ret2, threshold_img = cv2.threshold(
-        sobelx, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-    )
+    ret2, threshold_img = cv2.threshold(sobelx, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
     morph_n_threshold_img = threshold_img.copy()
     cv2.morphologyEx(
@@ -51,9 +49,7 @@ def preprocess_color(img):
 
 def clean_plate(plate):
     gray = cv2.cvtColor(plate, cv2.COLOR_BGR2GRAY)
-    thresh = cv2.adaptiveThreshold(
-        gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
-    )
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
     contours = get_contours(thresh.copy())
 
     if contours:
@@ -104,7 +100,9 @@ def sort_cont(character_contours):
     bounding_boxes = [cv2.boundingRect(c) for c in character_contours]
     character_contours, _ = zip(
         *sorted(
-            zip(character_contours, bounding_boxes), key=lambda b: b[1][i], reverse=False
+            zip(character_contours, bounding_boxes),
+            key=lambda b: b[1][i],
+            reverse=False,
         )
     )
     return character_contours
@@ -198,7 +196,13 @@ def segment_chars(plate_img, fixed_width):
         return None
 
 
-def is_valid_ratio(area, width, height, ratio_min: t.Union[int, float] = 3, ratio_max: t.Union[int, float] = 6):
+def is_valid_ratio(
+        area,
+        width,
+        height,
+        ratio_min: t.Union[int, float] = 3,
+        ratio_max: t.Union[int, float] = 6,
+):
     ratio = float(width) / float(height)
     if ratio < 1:
         ratio = 1 / ratio

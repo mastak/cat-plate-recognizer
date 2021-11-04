@@ -23,10 +23,27 @@ LATEST_MODEL_DETECTOR = "resources/Detector/yolov5/yolov5s-2021-07-28.pt"
 LATEST_MODEL_NP_POINTS_CRAFT_MLT = "resources/NpPointsCraft/craft_mlt/craft_mlt_25k_2020-02-16.pth"
 LATEST_MODEL_NP_POINTS_CRAFT_REFINDER = "resources/NpPointsCraft/craft_refiner/craft_refiner_CTW1500_2020-02-16.pth"
 
-LATEST_MODEL_OPTIONS_DETECTOR = "resources/OptionsDetector/numberplate_options/numberplate_options_2021_08_13_pytorch_lightning.ckpt"
+LATEST_MODEL_OPTIONS_DETECTOR = (
+    "resources/OptionsDetector/numberplate_options/numberplate_options_2021_08_13_pytorch_lightning.ckpt"
+)
 
-OPTIONS_DETECTOR_CLASS_REGION = ['military', 'eu_ua_2015', 'eu_ua_2004', 'eu_ua_1995', 'eu', 'xx_transit', 'ru', 'kz',
-                                 'eu-ua-fake-dpr', 'eu-ua-fake-lpr', 'ge', 'by', 'su', 'kg', 'am']
+OPTIONS_DETECTOR_CLASS_REGION = [
+    "military",
+    "eu_ua_2015",
+    "eu_ua_2004",
+    "eu_ua_1995",
+    "eu",
+    "xx_transit",
+    "ru",
+    "kz",
+    "eu-ua-fake-dpr",
+    "eu-ua-fake-lpr",
+    "ge",
+    "by",
+    "su",
+    "kg",
+    "am",
+]
 OPTIONS_DETECTOR_COUNT_LINES = [1, 2, 3]
 
 
@@ -34,7 +51,7 @@ class CustomDetector(Detector):
     def load(self, path_to_model: str = "latest") -> None:
         if path_to_model == "latest":
             path_to_model = LATEST_MODEL_DETECTOR
-        path_to_model = pkg_resources.resource_filename('car_plate_recognizer', path_to_model)
+        path_to_model = pkg_resources.resource_filename("car_plate_recognizer", path_to_model)
         return super().load(path_to_model)
 
 
@@ -42,11 +59,11 @@ class CustomNpPointsCraft(NpPointsCraft):
     def load(self, mtl_model_path: str = "latest", refiner_model_path: str = "latest") -> None:
         if mtl_model_path == "latest":
             mtl_model_path = LATEST_MODEL_NP_POINTS_CRAFT_MLT
-        mtl_model_path = pkg_resources.resource_filename('car_plate_recognizer', mtl_model_path)
+        mtl_model_path = pkg_resources.resource_filename("car_plate_recognizer", mtl_model_path)
 
         if refiner_model_path == "latest":
             refiner_model_path = LATEST_MODEL_NP_POINTS_CRAFT_REFINDER
-        refiner_model_path = pkg_resources.resource_filename('car_plate_recognizer', refiner_model_path)
+        refiner_model_path = pkg_resources.resource_filename("car_plate_recognizer", refiner_model_path)
         return super().load(mtl_model_path, refiner_model_path)
 
 
@@ -54,7 +71,7 @@ class CustomOptionsDetector(OptionsDetector):
     def load(self, path_to_model: str = "latest", options: t.Dict = None):
         if path_to_model == "latest":
             path_to_model = LATEST_MODEL_OPTIONS_DETECTOR
-        path_to_model = pkg_resources.resource_filename('car_plate_recognizer', path_to_model)
+        path_to_model = pkg_resources.resource_filename("car_plate_recognizer", path_to_model)
         return super().load(path_to_model, options)
 
 
@@ -66,10 +83,12 @@ class NomeroffHandler(BaseHandler):
         self.npPointsCraft = CustomNpPointsCraft()
         self.npPointsCraft.load()
 
-        self.optionsDetector = CustomOptionsDetector(options={
-            'class_region': OPTIONS_DETECTOR_CLASS_REGION,
-            'count_lines': OPTIONS_DETECTOR_COUNT_LINES,
-        })
+        self.optionsDetector = CustomOptionsDetector(
+            options={
+                "class_region": OPTIONS_DETECTOR_CLASS_REGION,
+                "count_lines": OPTIONS_DETECTOR_COUNT_LINES,
+            }
+        )
         self.optionsDetector.load("latest")
 
         self.textDetector = eu()

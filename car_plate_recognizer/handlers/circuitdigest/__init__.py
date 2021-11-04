@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class CircuitDigestHandler(BaseHandler):
-
     def get_plates(self, image: np.ndarray, frame_index: int) -> t.List[Plate]:
         plates = []
         image = cv2.resize(image, (620, 480))  # move to top level
@@ -27,22 +26,22 @@ class CircuitDigestHandler(BaseHandler):
         mask = np.zeros(img_gray.shape, np.uint8)
         for index, contour in enumerate(contours):
             new_image = cv2.drawContours(mask, [contour], 0, 255, -1)
-            save_img(new_image, f'Circuit{frame_index}-{index}-new_image-1.jpg')
+            save_img(new_image, f"Circuit{frame_index}-{index}-new_image-1.jpg")
             new_image = cv2.bitwise_and(image, image, mask=mask)
-            save_img(new_image, f'Circuit{frame_index}-{index}-new_image-2.jpg')
+            save_img(new_image, f"Circuit{frame_index}-{index}-new_image-2.jpg")
 
             # Now crop
             (x, y) = np.where(mask == 255)
             (topx, topy) = (np.min(x), np.min(y))
             (bottomx, bottomy) = (np.max(x), np.max(y))
-            cropped = img_gray[topx:bottomx + 1, topy:bottomy + 1]
+            cropped = img_gray[topx : bottomx + 1, topy : bottomy + 1]
 
             # Read the number plate
-            text = pytesseract.image_to_string(cropped, config='--psm 11')
+            text = pytesseract.image_to_string(cropped, config="--psm 11")
             print("Detected Number is:", text)
 
-            save_img(image, f'Circuit{frame_index}-{index}-origin.jpg')
-            save_img(cropped, f'Circuit{frame_index}-{index}-cropped.jpg')
+            save_img(image, f"Circuit{frame_index}-{index}-origin.jpg")
+            save_img(cropped, f"Circuit{frame_index}-{index}-cropped.jpg")
 
         return plates
 

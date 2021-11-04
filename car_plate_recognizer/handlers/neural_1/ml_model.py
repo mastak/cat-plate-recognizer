@@ -6,14 +6,9 @@ import tensorflow as tf
 
 class NeuralNetwork:
     def __init__(self):
-        # self.model_file = "./resources/binary_128_0.50_ver3.pb"
-        # self.label_file = "./resources/binary_128_0.50_labels_ver2.txt"
-        # self.model_file = pkg_resources.resource_filename(__name__,
-        self.model_file = pkg_resources.resource_filename('car_plate_recognizer',
-            "resources/binary_128_0.50_ver3.pb"
-        )
-        self.label_file = pkg_resources.resource_filename('car_plate_recognizer',
-            "resources/binary_128_0.50_labels_ver2.txt"
+        self.model_file = pkg_resources.resource_filename("car_plate_recognizer", "resources/binary_128_0.50_ver3.pb")
+        self.label_file = pkg_resources.resource_filename(
+            "car_plate_recognizer", "resources/binary_128_0.50_labels_ver2.txt"
         )
         self.label = self.load_label(self.label_file)
         self.graph = self.load_graph(self.model_file)
@@ -39,13 +34,9 @@ class NeuralNetwork:
         """
         takes an image and tranform it in tensor
         """
-        image = cv2.resize(
-            image, dsize=(imageSizeOuput, imageSizeOuput), interpolation=cv2.INTER_CUBIC
-        )
+        image = cv2.resize(image, dsize=(imageSizeOuput, imageSizeOuput), interpolation=cv2.INTER_CUBIC)
         np_image_data = np.asarray(image)
-        np_image_data = cv2.normalize(
-            np_image_data.astype("float"), None, -0.5, 0.5, cv2.NORM_MINMAX
-        )
+        np_image_data = cv2.normalize(np_image_data.astype("float"), None, -0.5, 0.5, cv2.NORM_MINMAX)
         np_final = np.expand_dims(np_image_data, axis=0)
         return np_final
 
@@ -57,9 +48,7 @@ class NeuralNetwork:
         input_operation = self.graph.get_operation_by_name(input_name)
         output_operation = self.graph.get_operation_by_name(output_name)
 
-        results = self.sess.run(
-            output_operation.outputs[0], {input_operation.outputs[0]: tensor}
-        )
+        results = self.sess.run(output_operation.outputs[0], {input_operation.outputs[0]: tensor})
         results = np.squeeze(results)
         labels = self.label
         top = results.argsort()[-1:][::-1]

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 from PIL import Image
 
-BASE_PATH = '/Users/ihorliubymov/source/mastak/car-plate-recognizer/logs'
+BASE_PATH = "/Users/ihorliubymov/source/mastak/car-plate-recognizer/logs"
 
 
 @dataclass
