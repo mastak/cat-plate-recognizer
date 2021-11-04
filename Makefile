@@ -2,7 +2,9 @@ DOCKER_IMAGE := "mastak/car-plate-recognizer"
 
 .PHONY: install
 install:
+	@git submodule update --init --recursive
 	@python3 -m pip install wheel
+	@python3 -m pip install -e nomeroff-net
 	@python3 -m pip install -r ./requirements.txt
 
 .PHONY: install-dev
