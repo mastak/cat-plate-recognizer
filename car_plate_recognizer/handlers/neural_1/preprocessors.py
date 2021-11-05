@@ -74,7 +74,7 @@ def check_plate_contour(input_img, contour):
         return None
 
     x, y, w, h = cv2.boundingRect(contour)
-    after_validation_img = input_img[y: y + h, x: x + w]
+    after_validation_img = input_img[y : y + h, x : x + w]
     after_clean_plate_img, is_plate_found, coordinates = clean_plate(after_validation_img)
     if not is_plate_found:
         return None
@@ -188,7 +188,7 @@ def segment_chars(plate_img, fixed_width):
                 x = x - addPixel
             else:
                 x = 0
-            temp = bgr_thresh[y: y + h + (addPixel * 2), x: x + w + (addPixel * 2)]
+            temp = bgr_thresh[y : y + h + (addPixel * 2), x : x + w + (addPixel * 2)]
 
             characters.append(temp)
         return characters
@@ -197,11 +197,11 @@ def segment_chars(plate_img, fixed_width):
 
 
 def is_valid_ratio(
-        area,
-        width,
-        height,
-        ratio_min: t.Union[int, float] = 3,
-        ratio_max: t.Union[int, float] = 6,
+    area,
+    width,
+    height,
+    ratio_min: t.Union[int, float] = 3,
+    ratio_max: t.Union[int, float] = 6,
 ):
     ratio = float(width) / float(height)
     if ratio < 1:

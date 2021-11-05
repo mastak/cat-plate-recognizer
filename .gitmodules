@@ -1,6 +1,6 @@
-[submodule "yolov5"]
-	path = yolov5
+[submodule "libs/yolov5"]
+	path = libs/yolov5
 	url = git@github.com:mastak/yolov5.git
-[submodule "nomeroff-net"]
-	path = nomeroff-net
-	url = git@github.com:mastak/nomeroff-net.git
+[submodule "libs/craft_pytorch"]
+	path = libs/craft_pytorch
+	url = git@github.com:mastak/CRAFT-pytorch.git

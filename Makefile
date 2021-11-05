@@ -4,7 +4,6 @@ DOCKER_IMAGE := "mastak/car-plate-recognizer"
 install:
 	@git submodule update --init --recursive
 	@python3 -m pip install wheel
-	@python3 -m pip install -e nomeroff-net
 	@python3 -m pip install -r ./requirements.txt
 
 .PHONY: install-dev
@@ -36,3 +35,7 @@ black:
 .PHONY: isort
 isort:
 	python3 -m isort --check ./car_plate_recognizer
+
+.PHONY: clean
+clean:
+	find . -type d -name __pycache__ -exec rm -r {} \+

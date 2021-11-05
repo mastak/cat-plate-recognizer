@@ -29,12 +29,15 @@ def stream_handler():
     cap = cv2.VideoCapture("/Users/ihorliubymov/Downloads/video.MOV")
     while cap.isOpened():
         ret, image = cap.read()
-        if not ret:
+        frame_index += 1
+        if frame_index % 3 != 0:
+            continue
+
+        if not ret or frame_index > 10:
             break
 
         image: np.ndarray = image
         image = cv2.resize(image, (620, 480))
-        frame_index += 1
 
         # save_img(image, f"{frame_index}-frame-src.jpg")
         for handler in handlers:
